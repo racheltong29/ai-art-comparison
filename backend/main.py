@@ -24,8 +24,8 @@ ALLOWED_CONTENT_TYPES = {
 
 app = FastAPI(
     title="Art Originality Checker",
-    description="Estimate how much uploaded artwork resembles AI-generated imagery.",
-    version="0.1.0",
+    description="Estimate stylistic similarity to common AI vs original art aesthetics.",
+    version="0.2.0",
 )
 
 app.add_middleware(
@@ -43,13 +43,18 @@ def get_detector() -> ArtLikenessDetector:
 
 def result_to_dict(result: AnalysisResult) -> dict:
     return {
+        "score_method": result.score_method,
+        "ai_aesthetic_similarity": result.ai_aesthetic_similarity,
+        "original_aesthetic_similarity": result.original_aesthetic_similarity,
+        "originality_score": result.originality_score,
+        "ai_likeness_percent": result.ai_likeness_percent,
+        "dominant_aesthetic": result.dominant_aesthetic,
+        "model_id": result.model_id,
+        "device": result.device,
+        # Backward-compatible fields
         "ai_probability": result.ai_probability,
         "human_probability": result.human_probability,
         "predicted_label": result.predicted_label,
-        "originality_score": result.originality_score,
-        "ai_likeness_percent": round(result.ai_probability * 100, 1),
-        "model_id": result.model_id,
-        "device": result.device,
     }
 
 
@@ -57,13 +62,19 @@ def result_to_dict(result: AnalysisResult) -> dict:
 def health() -> dict:
     detector_ready = False
     device = "unknown"
+    score_method = "stylistic_text_similarity"
     try:
         detector = get_detector()
         detector_ready = True
         device = str(detector.device)
     except Exception:  # noqa: BLE001
         pass
-    return {"status": "ok", "model_loaded": detector_ready, "device": device}
+    return {
+        "status": "ok",
+        "model_loaded": detector_ready,
+        "device": device,
+        "score_method": score_method,
+    }
 
 
 @app.post("/api/analyze")

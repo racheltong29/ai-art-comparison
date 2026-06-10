@@ -10,7 +10,10 @@
     <main class="page">
       <header class="hero">
         <h1>Art originality check</h1>
-        <p class="subtitle">Upload an image to get an AI-likeness score. Runs locally on CPU — no GPU needed.</p>
+        <p class="subtitle">
+          Upload an image for a stylistic similarity score — how much it visually aligns with
+          generic AI art vs original hand-made aesthetics. Not a forensic classifier.
+        </p>
       </header>
 
       <section class="panel upload-panel" id="drop-zone">
@@ -29,11 +32,11 @@
         <img id="preview" alt="Preview" class="preview" />
         <div class="scores">
           <div class="score-block">
-            <span class="label">Originality</span>
+            <span class="label">Original aesthetic</span>
             <span class="value" id="originality-score">—</span>
           </div>
           <div class="score-block ai">
-            <span class="label">AI-like</span>
+            <span class="label">AI aesthetic</span>
             <span class="value" id="ai-percent">—</span>
           </div>
         </div>
