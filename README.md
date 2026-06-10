@@ -1,40 +1,33 @@
-# Art Originality Checker (webapp)
+# Krita plugin — incremental originality feedback
 
-Upload an image and get an AI-likeness score. Backend runs locally on **CPU** — no GPU required.
+Dock panel that periodically checks your canvas against the local originality API.
 
-## Quick start
+## Prerequisites
+
+Start the **webapp** server (separate branch):
 
 ```powershell
-cd c:\Users\rache\Downloads\ai-art-comparison
+git checkout webapp
 .\run.ps1
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
+Then switch back to this branch to install the plugin, or keep both checked out in different folders.
 
-Manual setup:
+## Install
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements-cpu.txt
-uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
-```
+Copy `krita-plugin/ai_originality` to your Krita pykrita folder:
 
-First analysis downloads the model (~350 MB from Hugging Face).
+| OS | Path |
+|----|------|
+| Windows | `%APPDATA%\krita\pykrita\ai_originality` |
+| Linux | `~/.local/share/krita/pykrita/ai_originality` |
 
-## API
+Restart Krita → **Settings → Dockers → Originality Check**.
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/health` | Server + model status |
-| `POST /api/analyze` | Multipart field `file` (image) |
+## Usage
 
-## Model
+- **Check now** — analyze the active layer once
+- **Live feedback** — auto re-check every 15–300 s (default 45 s)
+- **Trend** — shows if your last edit moved the score up or down
 
-Free classifier: [`Ateeqq/ai-vs-human-image-detector`](https://huggingface.co/Ateeqq/ai-vs-human-image-detector) (~93M params).
-
-Set `FORCE_CPU=0` to use an NVIDIA GPU when available.
-
-## Krita plugin
-
-See the **`krita-plugin`** branch for a dock panel with live incremental feedback. Keep this server running while using Krita.
+See [krita-plugin/README.md](krita-plugin/README.md) for details.
