@@ -20,7 +20,23 @@ pip install -r requirements-cpu.txt
 uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-First analysis downloads the model (~350 MB from Hugging Face).
+First analysis downloads the model (~400 MB from Hugging Face).
+
+## How scoring works
+
+This is **stylistic similarity**, not forensic classification.
+
+The model ([`google/siglip-base-patch16-224`](https://huggingface.co/google/siglip-base-patch16-224)) compares your image to text descriptions of:
+
+- **AI-generic aesthetics** — smooth rendering, stock composition, diffusion look
+- **Original aesthetics** — brushwork, imperfections, personal style
+
+The percentages show **relative visual alignment** to those aesthetic poles. They always sum to ~100% but do **not** mean “this file was/wasn't made by AI.”
+
+Optional env vars:
+
+- `FORCE_CPU=0` — use NVIDIA GPU when available
+- `SCORE_TEMPERATURE=1.5` — higher = softer, less extreme percentages (default 1.5)
 
 ## API
 
@@ -29,11 +45,16 @@ First analysis downloads the model (~350 MB from Hugging Face).
 | `GET /api/health` | Server + model status |
 | `POST /api/analyze` | Multipart field `file` (image) |
 
-## Model
+Example response:
 
-Free classifier: [`Ateeqq/ai-vs-human-image-detector`](https://huggingface.co/Ateeqq/ai-vs-human-image-detector) (~93M params).
-
-Set `FORCE_CPU=0` to use an NVIDIA GPU when available.
+```json
+{
+  "score_method": "stylistic_text_similarity",
+  "originality_score": 62.3,
+  "ai_likeness_percent": 37.7,
+  "dominant_aesthetic": "original-aesthetic"
+}
+```
 
 ## Krita plugin
 

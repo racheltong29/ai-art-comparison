@@ -26,10 +26,14 @@ function showError(message) {
   errorPanel.classList.remove("hidden");
 }
 
-function tip(originality) {
-  if (originality >= 70) return "Reads as fairly human-like to the model.";
-  if (originality >= 45) return "Mixed — some AI-like visual patterns detected.";
-  return "High AI-likeness — consider pushing texture, composition, or personal style.";
+function tip(originality, aiLike) {
+  if (originality >= 70) {
+    return `Strong alignment with original-hand-made aesthetics (${originality}% vs ${aiLike}% AI-generic).`;
+  }
+  if (originality >= 45) {
+    return `Mixed stylistic signals — shares some visual traits with generic AI art (${aiLike}%).`;
+  }
+  return `Visually close to common AI art tropes (${aiLike}%) — try rougher texture, bolder composition, or personal references.`;
 }
 
 async function analyze(file) {
@@ -55,7 +59,7 @@ async function analyze(file) {
 
     originalityScore.textContent = `${payload.originality_score}%`;
     aiPercent.textContent = `${payload.ai_likeness_percent}%`;
-    feedback.textContent = tip(payload.originality_score);
+    feedback.textContent = tip(payload.originality_score, payload.ai_likeness_percent);
 
     hideAll();
     results.classList.remove("hidden");
