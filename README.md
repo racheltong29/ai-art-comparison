@@ -4,14 +4,12 @@ Dock panel that periodically checks your canvas against the local originality AP
 
 ## Prerequisites
 
-Start the **webapp** server (separate branch):
+The plugin calls `http://127.0.0.1:8000/api/analyze`. Start the server from the **`webapp`** branch:
 
 ```powershell
 git checkout webapp
 .\run.ps1
 ```
-
-Then switch back to this branch to install the plugin, or keep both checked out in different folders.
 
 ## Install
 
@@ -30,4 +28,4 @@ Restart Krita → **Settings → Dockers → Originality Check**.
 - **Live feedback** — auto re-check every 15–300 s (default 45 s)
 - **Trend** — shows if your last edit moved the score up or down
 
-See [krita-plugin/README.md](krita-plugin/README.md) for details.
+Details: [krita-plugin/README.md](krita-plugin/README.md)
