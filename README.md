@@ -1,61 +1,31 @@
-# Art Originality Checker (webapp)
+# Krita plugin — incremental originality feedback
 
-Upload an image and get an AI-likeness score. Backend runs locally on **CPU** — no GPU required.
+Dock panel that periodically checks your canvas against the local originality API.
 
-## Quick start
+## Prerequisites
+
+The plugin calls `http://127.0.0.1:8000/api/analyze`. Start the server from the **`webapp`** branch:
 
 ```powershell
-cd c:\Users\rache\Downloads\ai-art-comparison
+git checkout webapp
 .\run.ps1
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
+## Install
 
-Manual setup:
+Copy `krita-plugin/ai_originality` to your Krita pykrita folder:
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements-cpu.txt
-uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
-```
+| OS | Path |
+|----|------|
+| Windows | `%APPDATA%\krita\pykrita\ai_originality` |
+| Linux | `~/.local/share/krita/pykrita/ai_originality` |
 
-First analysis downloads the model (~400 MB from Hugging Face).
+Restart Krita → **Settings → Dockers → Originality Check**.
 
-## How scoring works
+## Usage
 
-This is **stylistic similarity**, not forensic classification.
+- **Check now** — analyze the active layer once
+- **Live feedback** — auto re-check every 15–300 s (default 45 s)
+- **Trend** — shows if your last edit moved the score up or down
 
-The model ([`google/siglip-base-patch16-224`](https://huggingface.co/google/siglip-base-patch16-224)) compares your image to text descriptions of:
-
-- **AI-generic aesthetics** — smooth rendering, stock composition, diffusion look
-- **Original aesthetics** — brushwork, imperfections, personal style
-
-The percentages show **relative visual alignment** to those aesthetic poles. They always sum to ~100% but do **not** mean “this file was/wasn't made by AI.”
-
-Optional env vars:
-
-- `FORCE_CPU=0` — use NVIDIA GPU when available
-- `SCORE_TEMPERATURE=1.5` — higher = softer, less extreme percentages (default 1.5)
-
-## API
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/health` | Server + model status |
-| `POST /api/analyze` | Multipart field `file` (image) |
-
-Example response:
-
-```json
-{
-  "score_method": "stylistic_text_similarity",
-  "originality_score": 62.3,
-  "ai_likeness_percent": 37.7,
-  "dominant_aesthetic": "original-aesthetic"
-}
-```
-
-## Krita plugin
-
-See the **`krita-plugin`** branch for a dock panel with live incremental feedback. Keep this server running while using Krita.
+Details: [krita-plugin/README.md](krita-plugin/README.md)
