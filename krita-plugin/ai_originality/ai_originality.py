@@ -1,30 +1,29 @@
 """Krita dock panel — incremental originality feedback while you work."""
 
-from __future__ import annotations
-
 from krita import DockWidget, DockWidgetFactory, DockWidgetFactoryBase, Krita
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import (
+
+from .api_client import DEFAULT_API_URL, analyze_png
+from .canvas_export import export_active_document_png
+from .qt_compat import (
     QCheckBox,
     QHBoxLayout,
     QLabel,
     QProgressBar,
     QPushButton,
     QSpinBox,
+    Qt,
+    QTimer,
     QVBoxLayout,
     QWidget,
 )
 
-from .api_client import DEFAULT_API_URL, analyze_png
-from .canvas_export import export_active_document_png
-
 
 class OriginalityDock(DockWidget):
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
         self.setWindowTitle("Originality Check")
         self._busy = False
-        self._history: list[float] = []
+        self._history = []
 
         root = QWidget()
         layout = QVBoxLayout(root)
@@ -80,10 +79,10 @@ class OriginalityDock(DockWidget):
         self.live_check.toggled.connect(self._on_live_toggled)
         self.interval_spin.valueChanged.connect(self._reset_timer_interval)
 
-    def canvasChanged(self, canvas) -> None:  # noqa: ARG002 - required Krita hook
+    def canvasChanged(self, canvas):
         pass
 
-    def _on_live_toggled(self, enabled: bool) -> None:
+    def _on_live_toggled(self, enabled):
         if enabled:
             self._reset_timer_interval()
             self.timer.start()
@@ -91,11 +90,11 @@ class OriginalityDock(DockWidget):
         else:
             self.timer.stop()
 
-    def _reset_timer_interval(self) -> None:
+    def _reset_timer_interval(self):
         if self.live_check.isChecked():
             self.timer.setInterval(self.interval_spin.value() * 1000)
 
-    def check_now(self) -> None:
+    def check_now(self):
         if self._busy:
             return
         self._busy = True
@@ -116,10 +115,10 @@ class OriginalityDock(DockWidget):
             if len(self._history) > 12:
                 self._history.pop(0)
 
-            self.score_label.setText(f"Originality: {originality:.0f}%")
-            self.ai_label.setText(f"AI-like: {ai_like:.0f}%")
+            self.score_label.setText("Originality: {:.0f}%".format(originality))
+            self.ai_label.setText("AI-like: {:.0f}%".format(ai_like))
             self.progress.setValue(int(round(originality)))
-            self.status_label.setText(f"Last check OK · {result.get('device', 'cpu')}")
+            self.status_label.setText("Last check OK · {}".format(result.get("device", "cpu")))
             self.trend_label.setText(self._trend_text())
         except RuntimeError as exc:
             self.status_label.setText(str(exc))
@@ -127,14 +126,14 @@ class OriginalityDock(DockWidget):
             self._busy = False
             self.check_button.setEnabled(True)
 
-    def _trend_text(self) -> str:
+    def _trend_text(self):
         if len(self._history) < 2:
             return "Trend: need one more check to show direction."
         delta = self._history[-1] - self._history[-2]
         if delta >= 3:
-            return f"Trend: originality up (+{delta:.0f} pts) — nice."
+            return "Trend: originality up (+{:.0f} pts) — nice.".format(delta)
         if delta <= -3:
-            return f"Trend: originality down ({delta:.0f} pts) — try rougher texture or bolder choices."
+            return "Trend: originality down ({:.0f} pts) — try rougher texture or bolder choices.".format(delta)
         return "Trend: holding steady."
 
 

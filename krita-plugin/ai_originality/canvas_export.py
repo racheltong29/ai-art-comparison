@@ -1,13 +1,11 @@
 """Export the active Krita document as PNG bytes."""
 
-from __future__ import annotations
-
 from krita import Krita
-from PyQt5.QtCore import QBuffer, QIODevice
-from PyQt5.QtGui import QImage
+
+from .qt_compat import QBuffer, QIODevice, QImage
 
 
-def export_active_document_png(max_edge: int = 512) -> bytes | None:
+def export_active_document_png(max_edge=512):
     instance = Krita.instance()
     document = instance.activeDocument()
     if document is None:

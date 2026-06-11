@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=Krita/PythonPlugin
+X-KDE-Library=ai_originality
+X-Python-2-Compatible=false
+Name=Originality Check
+Comment=Incremental AI aesthetic feedback while painting
