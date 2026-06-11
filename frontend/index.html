@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Art Originality Checker</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <h1>Art originality check</h1>
+        <p class="subtitle">
+          Upload an image for a stylistic similarity score — how much it visually aligns with
+          generic AI art vs original hand-made aesthetics. Not a forensic classifier.
+        </p>
+      </header>
+
+      <section class="panel upload-panel" id="drop-zone">
+        <input type="file" id="file-input" accept="image/*" hidden />
+        <p class="upload-title">Drop an image here or click to upload</p>
+        <p class="upload-hint">PNG, JPG, WebP · max 15 MB</p>
+      </section>
+
+      <section class="panel status hidden" id="status">
+        <div class="spinner" aria-hidden="true"></div>
+        <p id="status-text">Analyzing…</p>
+        <p class="upload-hint">First run downloads the model (~350 MB).</p>
+      </section>
+
+      <section class="panel results hidden" id="results">
+        <img id="preview" alt="Preview" class="preview" />
+        <div class="scores">
+          <div class="score-block">
+            <span class="label">Original aesthetic</span>
+            <span class="value" id="originality-score">—</span>
+          </div>
+          <div class="score-block ai">
+            <span class="label">AI aesthetic</span>
+            <span class="value" id="ai-percent">—</span>
+          </div>
+        </div>
+        <p class="feedback" id="feedback"></p>
+        <button type="button" id="reset-btn">Upload another</button>
+      </section>
+
+      <section class="panel error hidden" id="error">
+        <p id="error-text"></p>
+        <button type="button" id="error-reset">Try again</button>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

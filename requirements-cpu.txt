@@ -1,0 +1,12 @@
+# CPU-only PyTorch (no NVIDIA GPU required). Install with:
+#   pip install -r requirements-cpu.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
+Pillow>=10.0.0
+transformers>=4.45.0
+sentencepiece>=0.2.0
+protobuf>=4.25.0
+torch>=2.0.0
+torchvision>=0.15.0

@@ -4,19 +4,24 @@ Dock panel that periodically checks your canvas against the local originality AP
 
 **Requires the webapp server** from the `webapp` branch to be running (`.\run.ps1`).
 
-## Install
+## Install (Windows)
 
-1. Copy the `ai_originality` folder into your Krita pykrita directory:
+1. Copy **both** of these into `%APPDATA%\krita\pykrita\`:
+   - folder `ai_originality\` (the Python code)
+   - file `ai_originality.desktop` (tells Krita the plugin exists)
 
-   **Windows:** `%APPDATA%\krita\pykrita\ai_originality`
+   ```powershell
+   Copy-Item -Recurse -Force "krita-plugin\ai_originality" "$env:APPDATA\krita\pykrita\ai_originality"
+   Copy-Item -Force "krita-plugin\ai_originality.desktop" "$env:APPDATA\krita\pykrita\ai_originality.desktop"
+   ```
 
-   **Linux:** `~/.local/share/krita/pykrita/ai_originality`
+2. **Restart Krita.**
 
-2. Restart Krita.
+3. **Settings → Configure Krita → Python Plugin Manager** → enable **Originality Check** → restart Krita again.
 
-3. Enable the dock: **Settings → Dockers → Originality Check** (or find it in the right docker panel).
+4. **Settings → Dockers → Originality Check** → tick it on.
 
-4. Start the backend from the `webapp` branch:
+5. Start the backend (on the `webapp` branch):
 
    ```powershell
    .\run.ps1
@@ -24,14 +29,12 @@ Dock panel that periodically checks your canvas against the local originality AP
 
 ## Usage
 
-- **Check now** — one-shot analysis of the flattened active layer.
-- **Live feedback** — re-check every 15–300 seconds (default 45s).
-- **Trend** — compares the last two scores so you can see if changes helped.
+- **Check now** — one-shot analysis of the active layer
+- **Live feedback** — re-check every 15–300 seconds (default 45s)
+- **Trend** — compares the last two scores
 
-Canvas is exported as a downscaled PNG (max 512px) to keep CPU inference fast.
+## Troubleshooting
 
-## Notes
-
-- Uses only Python stdlib for HTTP — no extra pip packages inside Krita.
-- Scores are estimates from a general AI-vs-human classifier, not proof of how you made the art.
-- For unfinished sketches, expect noisy results.
+- **Not in Docker list?** Missing `ai_originality.desktop` or plugin not enabled in Python Plugin Manager.
+- **Hover over a grayed-out plugin** in Plugin Manager to see load errors.
+- **"Could not reach server"** — run `.\run.ps1` on the webapp branch first.
