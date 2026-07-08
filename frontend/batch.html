@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Batch composition vs. AI-likeness</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="page page-wide">
+      <header class="hero">
+        <h1>Composition vs. AI-likeness</h1>
+        <p class="subtitle">
+          Upload a batch of artworks to see how AI-likeness relates to composition metrics
+          (subject placement, symmetry, region count, edge density) derived from saliency-based
+          bounding boxes.
+        </p>
+        <p class="upload-hint"><a href="/static/index.html">&larr; Back to single-image checker</a></p>
+      </header>
+
+      <section class="panel upload-panel" id="drop-zone">
+        <input type="file" id="file-input" accept="image/*" multiple hidden />
+        <p class="upload-title">Drop up to 50 images here or click to upload</p>
+        <p class="upload-hint">PNG, JPG, WebP · max 15 MB each</p>
+      </section>
+
+      <section class="panel status hidden" id="status">
+        <div class="spinner" aria-hidden="true"></div>
+        <p id="status-text">Analyzing batch…</p>
+      </section>
+
+      <section class="panel error hidden" id="error">
+        <p id="error-text"></p>
+        <button type="button" id="error-reset">Try again</button>
+      </section>
+
+      <section class="panel results hidden" id="results">
+        <div class="chart-controls">
+          <label for="metric-select">Composition metric</label>
+          <select id="metric-select"></select>
+          <span class="correlation-badge" id="correlation-badge">r = —</span>
+        </div>
+        <canvas id="scatter-canvas" width="640" height="480"></canvas>
+        <button type="button" id="reset-btn">Upload another batch</button>
+      </section>
+    </main>
+    <script src="/static/batch.js"></script>
+  </body>
+</html>
