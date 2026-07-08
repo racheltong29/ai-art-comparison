@@ -1,15 +1,57 @@
-# Krita plugin — incremental originality feedback
+# AI art originality checker
 
-Dock panel that periodically checks your canvas against the local originality API.
+Estimates how closely an artwork's stylistic aesthetic aligns with generic AI-generated
+art vs. original hand-made work, and lets you study how that score relates to an
+artwork's composition (subject placement, symmetry, region count, edge density, etc.).
 
-## Prerequisites
+## Running the web app (backend + frontend)
 
-The plugin calls `http://127.0.0.1:8000/api/analyze`. Start the server from the **`webapp`** branch:
-
-```powershell
-git checkout webapp
-.\run.ps1
+```bash
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\Activate.ps1
+pip install -r requirements-cpu.txt # CPU-only torch; use requirements.txt if you have a GPU
+uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 ```
+
+(On Windows you can instead just run `.\run.ps1`, which does the same thing.)
+
+Then open `http://127.0.0.1:8000/`:
+
+- **Single image** (`/`) — drop one artwork, get its ai-likeness/originality score.
+- **Batch view** (`/static/batch.html`) — drop up to 50 artworks at once and see a scatter
+  plot of ai-likeness vs. a selectable composition metric, with a live Pearson correlation.
+  Calls `POST /api/analyze-batch` (add `?with_segmentation=true` for the slower Mask R-CNN
+  based metrics in addition to the fast saliency/contour ones).
+
+The first request downloads the SigLIP model (~350 MB); segmentation additionally downloads
+a Mask R-CNN checkpoint on first use.
+
+## Running the offline dataset analysis
+
+`analysis/` batch-scores a dataset and reports how ai-likeness correlates with composition,
+using the [AI-ArtBench](https://ieee-dataport.org/documents/ai-artbench) dataset (human vs.
+AI-generated artwork across matched styles) as the reference dataset:
+
+```bash
+# Point at a local copy of AI-ArtBench (Kaggle/IEEE DataPort download, unzipped)
+python -m analysis.run_analysis --local-dir /path/to/AI-ArtBench --limit 200
+
+# Or a HuggingFace Hub mirror
+python -m analysis.run_analysis --hf-dataset some/mirror --limit 200 --with-segmentation
+
+# Then correlate + plot
+python -m analysis.correlate --input analysis/output/results.csv
+```
+
+`run_analysis.py` writes `analysis/output/results.csv` (one row per image: ai-likeness score,
+composition metrics, style, and human/AI ground truth). `correlate.py` reads that CSV and
+writes `correlations.csv`, per-metric scatter plots, and a correlation heatmap into
+`analysis/output/`.
+
+## Krita plugin — incremental originality feedback
+
+Dock panel that periodically checks your canvas against the local originality API
+(`http://127.0.0.1:8000/api/analyze`, so start the server above first).
 
 ## Install
 
