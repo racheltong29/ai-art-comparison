@@ -25,6 +25,40 @@ body {
   padding: 2.5rem 1rem 3rem;
 }
 
+.page-wide {
+  max-width: 720px;
+}
+
+.chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.chart-controls select {
+  padding: 0.4rem 0.6rem;
+  background: #141820;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.correlation-badge {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+#scatter-canvas {
+  width: 100%;
+  height: auto;
+  background: #0a0c10;
+  border-radius: 8px;
+}
+
 h1 {
   margin: 0 0 0.5rem;
   font-size: 1.75rem;
