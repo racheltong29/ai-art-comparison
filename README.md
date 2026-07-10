@@ -45,8 +45,30 @@ python -m analysis.correlate --input analysis/output/results.csv
 
 `run_analysis.py` writes `analysis/output/results.csv` (one row per image: ai-likeness score,
 composition metrics, style, and human/AI ground truth). `correlate.py` reads that CSV and
-writes `correlations.csv`, per-metric scatter plots, and a correlation heatmap into
-`analysis/output/`.
+writes `correlations.csv` (now including Benjamini–Hochberg FDR-corrected p-values), per-metric
+scatter plots, and a correlation heatmap into `analysis/output/`.
+
+### Advanced statistics
+
+Raw per-metric correlations are easy to over-read, so `analysis/stats.py` adds a more
+defensible layer on top of the same `results.csv`:
+
+```bash
+python -m analysis.stats --input analysis/output/results.csv
+```
+
+It writes to `analysis/output/`:
+
+| Output | Answers |
+|--------|---------|
+| `score_validation.json`, `score_roc.png` | Does `ai_likeness_percent` actually separate the human/AI ground truth? (AUROC, best-threshold accuracy, Mann–Whitney gap, plus each composition metric's own AUROC as a baseline.) A low AUROC means composition findings built on the score are weak. |
+| `correlations_by_style.csv` | Per-style (metric × style) correlations — shows which effects survive within a single art style rather than being driven by style mix. |
+| `partial_correlations.csv` | Correlation of each metric with ai-likeness **after removing the art-style confound** (partial correlation controlling for style), FDR-corrected. Compare `partial_r` to `raw_r`: large shrinkage means the raw correlation was mostly style. |
+| `regression_summary.txt`, `feature_vif.csv` | Multiple regression of ai-likeness on all composition metrics at once (standardized coefficients + per-feature p-values + R²), and per-feature VIF flagging multicollinearity. |
+| `feature_importances.csv`, `feature_importances.png` | Random-forest impurity and permutation importances — which metrics matter jointly, capturing non-linear effects the regression misses. |
+
+Each section skips cleanly (with a printed note) when the data can't support it — e.g. only
+one class present, or too few rows per style.
 
 ## Krita plugin — incremental originality feedback
 

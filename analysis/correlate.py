@@ -15,9 +15,24 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy import stats
+from statsmodels.stats.multitest import multipletests
 
 OUTPUT_DIR = Path(__file__).resolve().parent / "output"
 TARGET_COLUMN = "ai_likeness_percent"
+
+
+def add_fdr(df: pd.DataFrame, p_column: str, alpha: float = 0.05) -> pd.DataFrame:
+    """Adds Benjamini-Hochberg FDR-corrected p-values and a significance flag."""
+    df = df.copy()
+    pvals = df[p_column].to_numpy()
+    if len(pvals) < 2:
+        df[f"{p_column}_fdr"] = pvals
+        df["significant_fdr"] = pvals < alpha
+        return df
+    reject, corrected, _, _ = multipletests(pvals, alpha=alpha, method="fdr_bh")
+    df[f"{p_column}_fdr"] = corrected.round(4)
+    df["significant_fdr"] = reject
+    return df
 
 
 def parse_args() -> argparse.Namespace:
@@ -79,7 +94,9 @@ def main() -> None:
         fig.savefig(output_dir / f"scatter_{column}.png", dpi=150)
         plt.close(fig)
 
-    correlation_df = pd.DataFrame(correlation_rows).sort_values(
+    correlation_df = pd.DataFrame(correlation_rows)
+    correlation_df = add_fdr(correlation_df, "pearson_p")
+    correlation_df = correlation_df.sort_values(
         "pearson_r", key=lambda s: s.abs(), ascending=False
     )
     correlation_df.to_csv(output_dir / "correlations.csv", index=False)
