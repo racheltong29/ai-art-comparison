@@ -32,10 +32,18 @@ class ArtworkSample:
     style: str
     is_ai_generated: bool
     source: str
+    path: str | None = None
 
 
-def iter_local_directory(root: str | Path, split: str | None = None) -> Iterator[ArtworkSample]:
-    """Walks a local AI-ArtBench directory tree, yielding one sample per image file."""
+def iter_local_directory(
+    root: str | Path, split: str | None = None, style_filter: str | None = None
+) -> Iterator[ArtworkSample]:
+    """Walks a local AI-ArtBench directory tree, yielding one sample per image file.
+
+    `style_filter`, if given, restricts to style directories whose name (after
+    stripping the AI_SD_/AI_LD_ prefix) matches, e.g. "renaissance" picks up
+    `renaissance/`, `AI_SD_renaissance/`, and `AI_LD_renaissance/`.
+    """
     root_path = Path(root)
     base = root_path / split if split else root_path
     if not base.is_dir():
@@ -48,6 +56,8 @@ def iter_local_directory(root: str | Path, split: str | None = None) -> Iterator
             if style.startswith(prefix):
                 style = style[len(prefix):]
                 break
+        if style_filter and style.lower().replace("-", "_") != style_filter.lower().replace("-", "_"):
+            continue
         for image_path in sorted(style_dir.iterdir()):
             if image_path.suffix.lower() not in (".jpg", ".jpeg", ".png", ".webp"):
                 continue
@@ -56,6 +66,7 @@ def iter_local_directory(root: str | Path, split: str | None = None) -> Iterator
                 style=style,
                 is_ai_generated=is_ai,
                 source=style_dir.name,
+                path=str(image_path),
             )
 
 

@@ -1,0 +1,25 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] Model config: bos_token_id must be `None` or an integer within the vocabulary (between 0 and 31999), got 49406. This may result in unexpected behavior.
+[transformers] Model config: eos_token_id must be `None` or an integer within the vocabulary (between 0 and 31999), got 49407. This may result in unexpected behavior.
+Loading weights:   0%|          | 0/408 [00:00<?, ?it/s]Loading weights: 100%|██████████| 408/408 [00:00<00:00, 14635.55it/s]
+[10/200] 1.0s elapsed
+[20/200] 1.7s elapsed
+[30/200] 2.4s elapsed
+[40/200] 3.1s elapsed
+[50/200] 3.8s elapsed
+[60/200] 4.5s elapsed
+[70/200] 5.3s elapsed
+[80/200] 6.0s elapsed
+[90/200] 6.7s elapsed
+[100/200] 7.4s elapsed
+[110/200] 8.2s elapsed
+[120/200] 9.0s elapsed
+[130/200] 9.7s elapsed
+[140/200] 10.5s elapsed
+[150/200] 11.3s elapsed
+[160/200] 12.1s elapsed
+[170/200] 12.8s elapsed
+[180/200] 13.5s elapsed
+[190/200] 14.3s elapsed
+[200/200] 14.9s elapsed
+Wrote 200 rows to analysis/output/art_nouveau/results.csv

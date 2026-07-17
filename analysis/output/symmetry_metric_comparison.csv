@@ -1,0 +1,11 @@
+genre,symmetry_score_r,symmetry_score_p_fdr,symmetry_fuzzy_global_r,symmetry_fuzzy_global_p_fdr
+renaissance,-0.1476,0.2192,-0.0807,0.4606
+ukiyo_e,-0.2163,0.0094,-0.2327,0.0081
+romanticism,-0.0448,0.5416,0.1749,0.0239
+impressionism,-0.0468,0.8317,-0.0582,0.8317
+art_nouveau,0.0823,0.2775,0.2135,0.0216
+baroque,0.1014,0.197,0.3421,0.0
+surrealism,-0.0196,0.8038,0.0177,0.8038
+post_impressionism,0.0186,0.8549,-0.1279,0.128
+realism,-0.0495,0.7293,0.0014,0.9839
+expressionism,-0.0853,0.4257,-0.1517,0.2799

@@ -15,6 +15,15 @@ MAX_EDGE = 512
 SALIENCY_THRESHOLD = 0.5
 SEGMENTATION_SCORE_THRESHOLD = 0.5
 
+# Global reflection-symmetry search with fuzzy weighting (a less strict
+# alternative to the fixed-center, hard pixel-difference `symmetry_score`):
+# candidate reflection axes are searched around the geometric center rather
+# than assuming perfect centering, and pixel agreement is scored with a
+# Gaussian membership function instead of raw absolute difference, so small
+# mismatches barely count against the score.
+SYMMETRY_AXIS_OFFSETS = (-0.15, -0.10, -0.05, 0.0, 0.05, 0.10, 0.15)
+SYMMETRY_FUZZY_SIGMA = 40.0
+
 
 @dataclass(frozen=True)
 class CvCompositionResult:
@@ -24,6 +33,7 @@ class CvCompositionResult:
     subject_centroid_y: float
     rule_of_thirds_offset: float
     symmetry_score: float
+    symmetry_score_fuzzy_global: float
     edge_density: float
     negative_space_ratio: float
 
@@ -35,6 +45,7 @@ class CvCompositionResult:
             "subject_centroid_y": round(self.subject_centroid_y, 4),
             "rule_of_thirds_offset": round(self.rule_of_thirds_offset, 4),
             "symmetry_score": round(self.symmetry_score, 4),
+            "symmetry_score_fuzzy_global": round(self.symmetry_score_fuzzy_global, 4),
             "edge_density": round(self.edge_density, 4),
             "negative_space_ratio": round(self.negative_space_ratio, 4),
         }
@@ -90,6 +101,52 @@ class CompositionAnalyzer:
                 Image.Resampling.LANCZOS,
             )
         return image
+
+    @staticmethod
+    def _best_fuzzy_reflection_score(gray: np.ndarray, axis: str) -> float:
+        """Searches candidate reflection axes and scores pixel agreement fuzzily.
+
+        `axis="vertical"` tests vertical lines of symmetry (left/right split);
+        `axis="horizontal"` tests horizontal lines of symmetry (top/bottom split).
+        For each candidate axis position, agreement is scored with a Gaussian
+        membership function of the pixel difference rather than a hard
+        threshold or raw absolute difference, so near-matches count almost
+        fully and only large mismatches meaningfully lower the score.
+        """
+        size = gray.shape[1] if axis == "vertical" else gray.shape[0]
+        best = 0.0
+        for offset_frac in SYMMETRY_AXIS_OFFSETS:
+            center = size // 2 + int(round(offset_frac * size))
+            if center <= 0 or center >= size:
+                continue
+
+            if axis == "vertical":
+                first = gray[:, :center].astype("float32")
+                second = cv2.flip(gray[:, center:], 1).astype("float32")
+                # Both arrays are ordered outward-from-axis-to-edge, so the
+                # pixels adjacent to the axis sit at the *end* of each slice -
+                # right-align on that end, not the start, when lengths differ.
+                overlap = min(first.shape[1], second.shape[1])
+                if overlap == 0:
+                    continue
+                diff = (
+                    first[:, first.shape[1] - overlap :]
+                    - second[:, second.shape[1] - overlap :]
+                )
+            else:
+                first = gray[:center, :].astype("float32")
+                second = cv2.flip(gray[center:, :], 0).astype("float32")
+                overlap = min(first.shape[0], second.shape[0])
+                if overlap == 0:
+                    continue
+                diff = (
+                    first[first.shape[0] - overlap :, :]
+                    - second[second.shape[0] - overlap :, :]
+                )
+
+            fuzzy_similarity = np.exp(-(diff**2) / (2 * SYMMETRY_FUZZY_SIGMA**2))
+            best = max(best, float(np.mean(fuzzy_similarity)))
+        return best
 
     def analyze_cv(self, image_bytes: bytes) -> CvCompositionResult:
         image = self._prepare_image(image_bytes)
@@ -155,6 +212,11 @@ class CompositionAnalyzer:
 
         symmetry_score = 1.0 - (horizontal_diff + vertical_diff) / (2 * 255.0)
 
+        symmetry_score_fuzzy_global = (
+            self._best_fuzzy_reflection_score(gray, axis="vertical")
+            + self._best_fuzzy_reflection_score(gray, axis="horizontal")
+        ) / 2.0
+
         edges = cv2.Canny(gray, 100, 200)
         edge_density = float(np.count_nonzero(edges)) / total_area
 
@@ -166,6 +228,7 @@ class CompositionAnalyzer:
             subject_centroid_x=centroid_x,
             subject_centroid_y=centroid_y,
             rule_of_thirds_offset=rule_of_thirds_offset,
+            symmetry_score_fuzzy_global=symmetry_score_fuzzy_global,
             symmetry_score=symmetry_score,
             edge_density=edge_density,
             negative_space_ratio=negative_space_ratio,

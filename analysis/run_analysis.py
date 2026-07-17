@@ -32,6 +32,11 @@ def parse_args() -> argparse.Namespace:
     source.add_argument("--local-dir", help="Path to a locally downloaded AI-ArtBench directory.")
     source.add_argument("--hf-dataset", help="HuggingFace Hub dataset repo id.")
     parser.add_argument("--split", default="train", help="Split/subfolder to read (default: train).")
+    parser.add_argument(
+        "--style",
+        default=None,
+        help="Restrict --local-dir to one style/genre (e.g. renaissance), matching human + AI_SD_/AI_LD_ variants.",
+    )
     parser.add_argument("--image-column", default="image")
     parser.add_argument("--label-column", default="label")
     parser.add_argument("--style-column", default=None)
@@ -52,7 +57,7 @@ def parse_args() -> argparse.Namespace:
 
 def build_samples(args: argparse.Namespace) -> list[ArtworkSample]:
     if args.local_dir:
-        raw = iter_local_directory(args.local_dir, split=args.split)
+        raw = iter_local_directory(args.local_dir, split=args.split, style_filter=args.style)
     else:
         raw = iter_hf_dataset(
             args.hf_dataset,
@@ -90,6 +95,7 @@ def main() -> None:
             "style": sample.style,
             "is_ai_generated": sample.is_ai_generated,
             "source": sample.source,
+            "path": sample.path,
             "ai_likeness_percent": ai_result.ai_likeness_percent,
             "originality_score": ai_result.originality_score,
             "dominant_aesthetic": ai_result.dominant_aesthetic,

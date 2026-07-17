@@ -1,0 +1,10 @@
+metric,pearson_r,pearson_p,spearman_r,spearman_p,n,pearson_p_fdr,significant_fdr
+cv_symmetry_score,-0.1476,0.037,-0.2068,0.0033,200,0.2192,False
+cv_subject_centroid_x,0.1396,0.0487,0.1389,0.0498,200,0.2192,False
+cv_subject_centroid_y,0.1046,0.1405,0.0382,0.5909,200,0.3359,False
+cv_rule_of_thirds_offset,0.1023,0.1493,0.0701,0.324,200,0.3359,False
+cv_symmetry_score_fuzzy_global,-0.0807,0.2559,-0.1273,0.0725,200,0.4606,False
+cv_largest_region_area_ratio,0.0363,0.6098,-0.0189,0.7908,200,0.8755,False
+cv_edge_density,-0.0223,0.7541,0.0574,0.4195,200,0.8755,False
+cv_negative_space_ratio,-0.02,0.7782,-0.0287,0.6861,200,0.8755,False
+cv_region_count,0.011,0.8772,0.0765,0.2819,200,0.8772,False

@@ -1,0 +1,25 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] Model config: bos_token_id must be `None` or an integer within the vocabulary (between 0 and 31999), got 49406. This may result in unexpected behavior.
+[transformers] Model config: eos_token_id must be `None` or an integer within the vocabulary (between 0 and 31999), got 49407. This may result in unexpected behavior.
+Loading weights:   0%|          | 0/408 [00:00<?, ?it/s]Loading weights: 100%|██████████| 408/408 [00:00<00:00, 22692.06it/s]
+[10/200] 0.9s elapsed
+[20/200] 1.7s elapsed
+[30/200] 2.5s elapsed
+[40/200] 3.3s elapsed
+[50/200] 4.1s elapsed
+[60/200] 4.9s elapsed
+[70/200] 5.7s elapsed
+[80/200] 6.4s elapsed
+[90/200] 7.1s elapsed
+[100/200] 8.0s elapsed
+[110/200] 8.7s elapsed
+[120/200] 9.4s elapsed
+[130/200] 10.1s elapsed
+[140/200] 10.8s elapsed
+[150/200] 11.5s elapsed
+[160/200] 12.2s elapsed
+[170/200] 12.9s elapsed
+[180/200] 13.7s elapsed
+[190/200] 14.5s elapsed
+[200/200] 15.2s elapsed
+Wrote 200 rows to analysis/output/impressionism/results.csv

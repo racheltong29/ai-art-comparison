@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 
 from backend.composition import CompositionAnalyzer, CompositionResult
 from backend.detector import AnalysisResult, ArtLikenessDetector
+from backend.genre_calibration import GenreCalibrator
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "frontend"
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
@@ -50,6 +51,11 @@ def get_composition_analyzer() -> CompositionAnalyzer:
     return CompositionAnalyzer()
 
 
+@lru_cache(maxsize=1)
+def get_genre_calibrator() -> GenreCalibrator:
+    return GenreCalibrator()
+
+
 def result_to_dict(result: AnalysisResult) -> dict:
     return {
         "score_method": result.score_method,
@@ -60,6 +66,8 @@ def result_to_dict(result: AnalysisResult) -> dict:
         "dominant_aesthetic": result.dominant_aesthetic,
         "model_id": result.model_id,
         "device": result.device,
+        "detected_genre": result.detected_genre,
+        "genre_confidence": result.genre_confidence,
         # Backward-compatible fields
         "ai_probability": result.ai_probability,
         "human_probability": result.human_probability,
@@ -102,10 +110,17 @@ async def analyze_artwork(file: UploadFile = File(...)) -> dict:
 
     try:
         result = get_detector().analyze(data)
+        cv_result = get_composition_analyzer().analyze_cv(data)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=422, detail=f"Could not analyze image: {exc}") from exc
 
-    return result_to_dict(result)
+    response = result_to_dict(result)
+    calibrator = get_genre_calibrator()
+    response["genre_detection_reliable"] = calibrator.is_reliable(result.detected_genre)
+    calibration = calibrator.calibrate(result.detected_genre, cv_result.to_dict())
+    if calibration is not None:
+        response["genre_calibration"] = calibration.to_dict()
+    return response
 
 
 def composition_to_dict(result: CompositionResult) -> dict:
@@ -156,6 +171,13 @@ async def analyze_batch(
         entry = {"filename": file.filename}
         entry.update(result_to_dict(ai_result))
         entry.update(composition_to_dict(composition_result))
+        calibrator = get_genre_calibrator()
+        entry["genre_detection_reliable"] = calibrator.is_reliable(ai_result.detected_genre)
+        calibration = calibrator.calibrate(
+            ai_result.detected_genre, composition_result.cv.to_dict()
+        )
+        if calibration is not None:
+            entry["genre_calibration"] = calibration.to_dict()
         results.append(entry)
 
     return results

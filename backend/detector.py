@@ -10,6 +10,8 @@ import torch
 from PIL import Image
 from transformers import AutoProcessor, SiglipModel
 
+from backend.genre_calibration import GENRE_KEYS, GENRE_PROMPTS
+
 MODEL_ID = "google/siglip-base-patch16-224"
 MAX_EDGE = 512
 
@@ -37,6 +39,8 @@ class AnalysisResult:
     score_method: str
     model_id: str
     device: str
+    detected_genre: str
+    genre_confidence: float
 
     # Backward-compatible aliases for the Krita plugin and older clients.
     @property
@@ -72,8 +76,11 @@ class ArtLikenessDetector:
         self.model.to(self.device)
         self.model.eval()
 
-        self._prompts = [*AI_AESTHETIC_PROMPTS, *ORIGINAL_AESTHETIC_PROMPTS]
+        self._aesthetic_count = len(AI_AESTHETIC_PROMPTS) + len(ORIGINAL_AESTHETIC_PROMPTS)
         self._ai_count = len(AI_AESTHETIC_PROMPTS)
+        self._genre_prompts = [GENRE_PROMPTS[key] for key in GENRE_KEYS]
+        # Genre prompts ride along in the same forward pass (no extra vision-encoder cost).
+        self._prompts = [*AI_AESTHETIC_PROMPTS, *ORIGINAL_AESTHETIC_PROMPTS, *self._genre_prompts]
 
     @staticmethod
     def _prepare_image(image_bytes: bytes) -> Image.Image:
@@ -97,6 +104,11 @@ class ArtLikenessDetector:
         )
         return float(weights[0].item()), float(weights[1].item())
 
+    def _detect_genre(self, genre_logits: torch.Tensor) -> tuple[str, float]:
+        probs = torch.softmax(genre_logits / self.temperature, dim=0)
+        best = int(torch.argmax(probs).item())
+        return GENRE_KEYS[best], float(probs[best].item())
+
     def analyze(self, image_bytes: bytes) -> AnalysisResult:
         image = self._prepare_image(image_bytes)
         inputs = self.processor(
@@ -109,8 +121,12 @@ class ArtLikenessDetector:
         with torch.inference_mode():
             logits = self.model(**inputs).logits_per_image.squeeze(0)
 
-        ai_sim, original_sim = self._similarity_weights(logits)
+        aesthetic_logits = logits[: self._aesthetic_count]
+        genre_logits = logits[self._aesthetic_count :]
+
+        ai_sim, original_sim = self._similarity_weights(aesthetic_logits)
         dominant = "original-aesthetic" if original_sim >= ai_sim else "ai-aesthetic"
+        genre, genre_confidence = self._detect_genre(genre_logits)
 
         return AnalysisResult(
             ai_aesthetic_similarity=round(ai_sim, 4),
@@ -121,4 +137,6 @@ class ArtLikenessDetector:
             score_method="stylistic_text_similarity",
             model_id=self.model_id,
             device=str(self.device),
+            detected_genre=genre,
+            genre_confidence=round(genre_confidence, 4),
         )
